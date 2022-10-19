@@ -34,7 +34,7 @@ ou
 ```c#
 var users = await _repository
                 .CreateQuery()
-                .ByGsi("GSI-InhiredType", "InhiredType", "User")
+                .ByGsi("GSI-InheritedType", "InheritedType", "User")
                 .QueryAsync();
 ```
 

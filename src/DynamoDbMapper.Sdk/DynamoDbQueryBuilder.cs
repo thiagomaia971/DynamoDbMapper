@@ -67,9 +67,9 @@ public class DynamoDbQueryBuilder<T>
         return this;
     }
 
-    public DynamoDbQueryBuilder<T> ByInhiredType(DynamoDbOperator queryOperator = DynamoDbOperator.Equal)
+    public DynamoDbQueryBuilder<T> ByInheritedType(DynamoDbOperator queryOperator = DynamoDbOperator.Equal)
     {
-        _conditions.Add(DynamoDbCondition.Create("InhiredType", queryOperator, _entityType));
+        _conditions.Add(DynamoDbCondition.Create("InheritedType", queryOperator, _entityType));
         return this;
     }
 

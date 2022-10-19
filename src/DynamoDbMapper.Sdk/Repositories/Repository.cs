@@ -39,12 +39,12 @@ public class Repository<T> : IRepository<T>
     public virtual async Task<T> FindById(string id) 
         => await CreateQuery()
             .ById(id)
-            .ByInhiredType()
+            .ByInheritedType()
             .FindAsync();
 
     public virtual async Task<Pagination<T>> GetAll() 
         => await CreateQuery()
-            .ByGsi(x => x.InheredType, _entityType)
+            .ByGsi(x => x.InheritedType, _entityType)
             .QueryAsync();
 
     public virtual async Task Remove(T entity) 
