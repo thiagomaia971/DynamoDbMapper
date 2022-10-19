@@ -25,6 +25,11 @@ jobs:
     
     - name: Get Version
       uses: battila7/get-version-action@v2.2.1
+      
+    - name: Print
+      run: |
+          echo ${{ steps.get_version.outputs.version }}
+          echo ${{ steps.get_version.outputs.version-without-v }}
     
 #     - name: Get Build Version
 #       run: |
