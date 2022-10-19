@@ -1,6 +1,6 @@
 ﻿namespace DynamoDbMapper.Sdk.Entities;
 
-public class MultiTenantTransient
+public class MultiTenantScoped
 {
     public string UserId { get; set; }
 }

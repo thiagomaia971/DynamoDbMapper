@@ -10,10 +10,10 @@ public class Repository<T> : IRepository<T>
 {
     protected readonly IAmazonDynamoDB _amazonDynamoDb;
     protected readonly IDynamoDBContext _dynamoDbContext;
-    private readonly MultiTenantTransient _multiTenant;
+    private readonly MultiTenantScoped _multiTenant;
     protected DynamoDbQueryBuilder<T> _dynamoDbQueryBuilder;
 
-    public Repository(IAmazonDynamoDB amazonDynamoDb, IDynamoDBContext dynamoDbContext, MultiTenantTransient multiTenant)
+    public Repository(IAmazonDynamoDB amazonDynamoDb, IDynamoDBContext dynamoDbContext, MultiTenantScoped multiTenant)
     {
         _amazonDynamoDb = amazonDynamoDb;
         _dynamoDbContext = dynamoDbContext;
