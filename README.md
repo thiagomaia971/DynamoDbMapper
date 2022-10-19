@@ -26,13 +26,13 @@ services
 Return all Users and yours SubEntities.
 
 ```c#
-var users = _repository.GetAll();
+var users = await _repository.GetAll();
 ```
 
 ou
 
 ```c#
-var users = _repository
+var users = await _repository
                 .CreateQuery()
                 .ByGsi("GSI-EntityType", "EntityType", "User", DynamoDbOperator.BeginsWith)
                 .ScanAsync();
@@ -43,13 +43,13 @@ var users = _repository
 Return User and yours SubEntities.
 
 ```c#
-var users = _repository.FindById("123456");
+var users = await _repository.FindById("123456");
 ```
 
 ou
 
 ```c#
-var users = _repository
+var users = await _repository
                 .CreateQuery()
                 .ById("123456")
                 .ByEntityType(DynamoDbOperator.BeginsWith)
