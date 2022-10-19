@@ -49,6 +49,18 @@ public class DynamoDbQueryBuilder<T>
         return this;
     }
 
+    public DynamoDbQueryBuilder<T> ByProperty(Expression<Func<T, string>> property, string value, DynamoDbOperator queryOperator = DynamoDbOperator.Equal)
+    {
+        _conditions.Add(DynamoDbCondition.Create(GetPropertyName(property), queryOperator, value));
+        return this;
+    }
+
+    public DynamoDbQueryBuilder<T> ByProperty(string property, string value, DynamoDbOperator queryOperator = DynamoDbOperator.Equal)
+    {
+        _conditions.Add(DynamoDbCondition.Create(property, queryOperator, value));
+        return this;
+    }
+
     public DynamoDbQueryBuilder<T> ByEntityType(DynamoDbOperator queryOperator = DynamoDbOperator.Equal)
     {
         _conditions.Add(DynamoDbCondition.Create("EntityType", queryOperator, _entityType));
