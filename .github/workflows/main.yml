@@ -1,9 +1,9 @@
 name: CI
 
 on:
-  create:
-    branches: 
-      - release/**
+  release:
+    types: 
+      - created
   push:
     branches:
     - main
@@ -46,9 +46,9 @@ jobs:
 
 
     - name: Pack nugets
-      if: startsWith(github.ref, 'refs/heads/release')
+      if: github.event_name == 'release'
       run: dotnet pack -c Release --no-build --output .
       
     - name: Publish
-      if: startsWith(github.ref, 'refs/heads/release')
+      if: github.event_name == 'release'
       run: nuget push **\*.nupkg -Source 'https://api.nuget.org/v3/index.json' -ApiKey ${{secrets.NUGET_API_KEY}}
