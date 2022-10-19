@@ -39,13 +39,13 @@ public class Repository<T> : IRepository<T>
     public virtual async Task<T> FindById(string id) 
         => await CreateQuery()
             .ById(id)
-            .ByEntityType(DynamoDbOperator.BeginsWith)
+            .ByInhiredType()
             .FindAsync();
 
     public virtual async Task<Pagination<T>> GetAll() 
         => await CreateQuery()
-            .ByGsi(x => x.EntityType, _entityType, DynamoDbOperator.BeginsWith)
-            .ScanAsync();
+            .ByGsi(x => x.InheredType, _entityType)
+            .QueryAsync();
 
     public virtual async Task Remove(T entity) 
         => await _dynamoDbContext.DeleteAsync(entity);

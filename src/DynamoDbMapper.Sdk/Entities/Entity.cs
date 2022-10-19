@@ -21,6 +21,11 @@ public abstract class Entity
     [JsonProperty("EntityType")]
     public string EntityType { get; private set; }
     
+    [DynamoDbGsi("GSI-InheredType")]
+    [DynamoDBProperty("InheredType")]
+    [JsonProperty("InheredType")]
+    public string InheredType { get; private set; }
+    
     [DynamoDbGsi("GSI1-Id")]
     [DynamoDBProperty("GSI1-Id")]
     [JsonProperty("GSI1-Id")]
@@ -34,6 +39,7 @@ public abstract class Entity
     public Entity()
     {
         EntityType = GetType().Name;
+        InheredType = EntityType;
         Id = Guid.NewGuid().ToString();
         Hash = Id;
     }

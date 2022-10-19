@@ -67,6 +67,12 @@ public class DynamoDbQueryBuilder<T>
         return this;
     }
 
+    public DynamoDbQueryBuilder<T> ByInhiredType(DynamoDbOperator queryOperator = DynamoDbOperator.Equal)
+    {
+        _conditions.Add(DynamoDbCondition.Create("InhiredType", queryOperator, _entityType));
+        return this;
+    }
+
     public DynamoDbQueryBuilder<T> ByGsi(Expression<Func<T, string>> property, string value, DynamoDbOperator queryOperator = DynamoDbOperator.Equal) 
         => ByGsi(GetGsiName(property), GetPropertyName(property), value, queryOperator);
 
