@@ -24,6 +24,7 @@ jobs:
       uses: NuGet/setup-nuget@v1.1.1
       with:
         dotnet-version: 7.x.x
+        include-prerelease: true
 
     - name: Restore dependencies
       run: nuget restore $SOLUTION
@@ -32,6 +33,7 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 7.x.x
+        include-prerelease: true
 
     - name: Build
       run: dotnet build $SOLUTION --configuration $BUILD_CONFIG --no-restore
