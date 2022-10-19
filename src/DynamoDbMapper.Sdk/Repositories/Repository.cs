@@ -11,13 +11,14 @@ public class Repository<T> : IRepository<T>
     protected readonly IAmazonDynamoDB _amazonDynamoDb;
     protected readonly IDynamoDBContext _dynamoDbContext;
     private readonly MultiTenantScoped _multiTenant;
-    protected DynamoDbQueryBuilder<T> _dynamoDbQueryBuilder;
+    protected string _entityType;
 
     public Repository(IAmazonDynamoDB amazonDynamoDb, IDynamoDBContext dynamoDbContext, MultiTenantScoped multiTenant)
     {
         _amazonDynamoDb = amazonDynamoDb;
         _dynamoDbContext = dynamoDbContext;
         _multiTenant = multiTenant;
+        _entityType = Activator.CreateInstance<T>().EntityType;
     }
 
     public virtual async Task<T> Save(T entity)
@@ -31,22 +32,19 @@ public class Repository<T> : IRepository<T>
     public DynamoDbQueryBuilder<T> CreateQuery()
     {
         var multiTenantUserId = typeof(TenantEntity).IsAssignableFrom(typeof(T)) ? _multiTenant.UserId : null;
-        return _dynamoDbQueryBuilder = DynamoDbQueryBuilder<T>
+        return DynamoDbQueryBuilder<T>
             .CreateQuery(_amazonDynamoDb, _dynamoDbContext, multiTenantUserId);
     }
 
-    public virtual async Task<T> FindById(string id)
-    {
-        var entityType = Activator.CreateInstance<T>().EntityType;
-        return await CreateQuery()
+    public virtual async Task<T> FindById(string id) 
+        => await CreateQuery()
             .ById(id)
-            .ByEntityType(entityType, DynamoDbOperator.BeginsWith)
+            .ByEntityType(DynamoDbOperator.BeginsWith)
             .FindAsync();
-    }
 
     public virtual async Task<Pagination<T>> GetAll() 
         => await CreateQuery()
-            .ByGsi(Activator.CreateInstance<T>().EntityType, x => x.EntityType, DynamoDbOperator.BeginsWith)
+            .ByGsi(x => x.EntityType, _entityType, DynamoDbOperator.BeginsWith)
             .ScanAsync();
 
     public virtual async Task Remove(T entity) 

@@ -15,6 +15,7 @@ public class DynamoDbQueryBuilder<T>
     private IAmazonDynamoDB _amazonDynamoDb;
     private IDynamoDBContext _dynamoDbContext;
     private readonly string _multiTenantUserId;
+    private string _entityType;
 
     private string GsiPropertyName { get; set; }
      private string GsiName => string.IsNullOrEmpty(GsiPropertyName) ? null : $"{GsiPropertyName}";
@@ -29,38 +30,42 @@ public class DynamoDbQueryBuilder<T>
         _dynamoDbContext = dynamoDbContext;
         _multiTenantUserId = multiTenantUserId;
         _conditions = new List<DynamoDbCondition>();
+        _entityType = Activator.CreateInstance<T>().EntityType;
     }
 
     public static DynamoDbQueryBuilder<T> CreateQuery(IAmazonDynamoDB amazonDynamoDb,
         IDynamoDBContext dynamoDbContext, string multiTenantUserId) 
         => new(amazonDynamoDb, dynamoDbContext, multiTenantUserId);
 
-    public DynamoDbQueryBuilder<T> ById(string id)
+    public DynamoDbQueryBuilder<T> ById(string value)
     {
-        _conditions.Add(DynamoDbCondition.Create("Id", DynamoDbOperator.Equal, id));
+        _conditions.Add(DynamoDbCondition.Create("Id", DynamoDbOperator.Equal, value));
         return this;
     }
 
-    public DynamoDbQueryBuilder<T> ByHash(string hash, DynamoDbOperator queryOperator = DynamoDbOperator.Equal)
+    public DynamoDbQueryBuilder<T> ByHash(string value, DynamoDbOperator queryOperator = DynamoDbOperator.Equal)
     {
-        _conditions.Add(DynamoDbCondition.Create("Hash", queryOperator, hash));
+        _conditions.Add(DynamoDbCondition.Create("Hash", queryOperator, value));
         return this;
     }
 
-    public DynamoDbQueryBuilder<T> ByEntityType(string entityType, DynamoDbOperator queryOperator = DynamoDbOperator.Equal)
+    public DynamoDbQueryBuilder<T> ByEntityType(DynamoDbOperator queryOperator = DynamoDbOperator.Equal)
     {
-        _conditions.Add(DynamoDbCondition.Create("EntityType", queryOperator, entityType));
+        _conditions.Add(DynamoDbCondition.Create("EntityType", queryOperator, _entityType));
         return this;
     }
 
-    public DynamoDbQueryBuilder<T> ByGsi(string id, Expression<Func<T, string>> action, DynamoDbOperator queryOperator = DynamoDbOperator.Equal) 
-        => ByGsi(id, GetGsiName(action), GetPropertyName(action), queryOperator);
+    public DynamoDbQueryBuilder<T> ByGsi(Expression<Func<T, string>> property, string value, DynamoDbOperator queryOperator = DynamoDbOperator.Equal) 
+        => ByGsi(GetGsiName(property), GetPropertyName(property), value, queryOperator);
 
-    public DynamoDbQueryBuilder<T> ByGsi(string id, string gsiName, string propertyName,
+    public DynamoDbQueryBuilder<T> ByGsi(
+        string gsiName, 
+        string propertyName,
+        string value,
         DynamoDbOperator queryOperator = DynamoDbOperator.Equal)
     {
         GsiPropertyName = gsiName;
-        _conditions.Add(DynamoDbCondition.Create(propertyName, queryOperator, id));
+        _conditions.Add(DynamoDbCondition.Create(propertyName, queryOperator, value));
         return this;
     }
 
