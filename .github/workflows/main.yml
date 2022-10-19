@@ -13,7 +13,7 @@ jobs:
 
     env:
       BUILD_CONFIG: 'Release'
-      SOLUTION: 'sc/DynamoDbMapper.sln'
+      SOLUTION: 'src/DynamoDbMapper.sln'
 
     runs-on: ubuntu-latest
 
