@@ -22,6 +22,8 @@ jobs:
 
     - name: Setup NuGet
       uses: NuGet/setup-nuget@v1.1.1
+      with:
+        dotnet-version: 7.x.x
 
     - name: Restore dependencies
       run: nuget restore $SOLUTION
