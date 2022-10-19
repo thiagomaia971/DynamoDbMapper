@@ -47,7 +47,7 @@ jobs:
 
     - name: Pack nugets
       if: github.event_name == 'release'
-      run: dotnet pack -c Release --no-build --output .
+      run: dotnet pack $SOLUTION -c Release --no-build --output .
       
     - name: Publish
       if: github.event_name == 'release'
