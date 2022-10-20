@@ -8,14 +8,12 @@ namespace DynamoDbMapper.Sdk.Repositories;
 public class Repository<T> : IRepository<T>
     where T : Entity
 {
-    protected readonly IAmazonDynamoDB _amazonDynamoDb;
     protected readonly IDynamoDBContext _dynamoDbContext;
     private readonly MultiTenantScoped _multiTenant;
     protected string _entityType;
 
-    public Repository(IAmazonDynamoDB amazonDynamoDb, IDynamoDBContext dynamoDbContext, MultiTenantScoped multiTenant)
+    public Repository(IDynamoDBContext dynamoDbContext, MultiTenantScoped multiTenant)
     {
-        _amazonDynamoDb = amazonDynamoDb;
         _dynamoDbContext = dynamoDbContext;
         _multiTenant = multiTenant;
         _entityType = Activator.CreateInstance<T>().EntityType;
@@ -33,7 +31,7 @@ public class Repository<T> : IRepository<T>
     {
         var multiTenantUserId = typeof(TenantEntity).IsAssignableFrom(typeof(T)) ? _multiTenant.UserId : null;
         return DynamoDbQueryBuilder<T>
-            .CreateQuery(_amazonDynamoDb, _dynamoDbContext, multiTenantUserId);
+            .CreateQuery(_dynamoDbContext, multiTenantUserId);
     }
 
     public virtual async Task<T> FindById(string id) 

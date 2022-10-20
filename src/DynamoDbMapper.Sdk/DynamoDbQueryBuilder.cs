@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.DocumentModel;
 using DynamoDbMapper.Sdk.Attributes;
@@ -12,7 +11,6 @@ public class DynamoDbQueryBuilder<T>
     where T: Entity
 {
     private int _pageSize = 10;
-    private IAmazonDynamoDB _amazonDynamoDb;
     private IDynamoDBContext _dynamoDbContext;
     private readonly string _multiTenantUserId;
     private string _entityType;
@@ -22,20 +20,19 @@ public class DynamoDbQueryBuilder<T>
     private IList<DynamoDbCondition> _conditions;
 
     private DynamoDbQueryBuilder(
-        IAmazonDynamoDB amazonDynamoDb, 
         IDynamoDBContext dynamoDbContext,
         string multiTenantUserId)
     {
-        _amazonDynamoDb = amazonDynamoDb;
         _dynamoDbContext = dynamoDbContext;
         _multiTenantUserId = multiTenantUserId;
         _conditions = new List<DynamoDbCondition>();
         _entityType = Activator.CreateInstance<T>().EntityType;
     }
 
-    public static DynamoDbQueryBuilder<T> CreateQuery(IAmazonDynamoDB amazonDynamoDb,
-        IDynamoDBContext dynamoDbContext, string multiTenantUserId) 
-        => new(amazonDynamoDb, dynamoDbContext, multiTenantUserId);
+    public static DynamoDbQueryBuilder<T> CreateQuery(
+        IDynamoDBContext dynamoDbContext, 
+        string multiTenantUserId) 
+        => new(dynamoDbContext, multiTenantUserId);
 
     public DynamoDbQueryBuilder<T> ById(string value)
     {
