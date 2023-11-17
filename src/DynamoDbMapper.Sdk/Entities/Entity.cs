@@ -10,21 +10,21 @@ public abstract class Entity
 {
     [DynamoDBHashKey("Id")] 
     [JsonProperty("Id")]
-    public string Id { get; private set; }
+    public string Id { get; protected set; }
 
     [DynamoDBRangeKey("Hash")]
     [JsonProperty("Hash")]
-    public string Hash { get; private set; }
+    public string Hash { get; protected set; }
     
     [DynamoDbGsi("GSI-EntityType")]
     [DynamoDBProperty("EntityType")]
     [JsonProperty("EntityType")]
-    public string EntityType { get; private set; }
+    public string EntityType { get; protected set; }
     
     [DynamoDbGsi("GSI-InheritedType")]
     [DynamoDBProperty("InheritedType")]
     [JsonProperty("InheritedType")]
-    public string InheritedType { get; private set; }
+    public string InheritedType { get; protected set; }
     
     [DynamoDbGsi("GSI1-Id")]
     [DynamoDBProperty("GSI1-Id")]
