@@ -97,9 +97,11 @@ public class DynamoDbQueryBuilder<T>
         
         var queryOperationConfig = new QueryOperationConfig
         {
+            Select = SelectValues.SpecificAttributes,
             IndexName = GsiName,
             Limit = _pageSize,
-            Filter = _conditions.ToQueryFilter()
+            Filter = _conditions.ToQueryFilter(),
+            AttributesToGet = GetAllProperties(typeof(T))
         };
         var table = _dynamoDbContext.GetTargetTable<T>();
         var search = table.Query(queryOperationConfig);
@@ -119,9 +121,11 @@ public class DynamoDbQueryBuilder<T>
         
         var scanOperationConfig = new ScanOperationConfig
         {
+            Select = SelectValues.SpecificAttributes,
             IndexName = GsiName,
             Limit = _pageSize,
-            Filter = _conditions.ToScanFilter()
+            Filter = _conditions.ToScanFilter(),
+            AttributesToGet = GetAllProperties(typeof(T))
         };
         var table = _dynamoDbContext.GetTargetTable<T>();
         var search = table.Scan(scanOperationConfig);
@@ -154,5 +158,30 @@ public class DynamoDbQueryBuilder<T>
             return dynamoDbPropertyAttribute.AttributeName;
         
         return expression.Member.Name;
+    }
+
+    private static List<string> GetAllProperties(Type type)
+    {
+        var propertiesName = new Dictionary<string, string>();
+        var properties = type.GetProperties();
+        
+        foreach (var propertyInfo in properties)
+        {
+            var isInner = propertyInfo.GetCustomAttribute<DynamoDbInner>();
+            if (isInner is null)
+            {
+                var columnName = propertyInfo.GetCollumnName();
+                propertiesName.TryAdd(columnName, columnName);
+            }
+            else
+            {
+                var listGenericInterface = propertyInfo.PropertyType.GetInterfaces()[0];
+                var entityTypeGeneric = listGenericInterface.GetGenericArguments()[0];
+                foreach (var property in GetAllProperties(entityTypeGeneric))
+                    propertiesName.TryAdd(property, property);
+            }
+        }
+
+        return propertiesName.Select(x => x.Key).ToList();
     }
 }

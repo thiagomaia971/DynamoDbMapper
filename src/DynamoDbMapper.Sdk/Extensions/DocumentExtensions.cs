@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System.Collections;
+using System.Diagnostics;
+using System.Reflection;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.DocumentModel;
 using DynamoDbMapper.Sdk.Attributes;
@@ -38,16 +40,11 @@ public static class DocumentExtensions
 
         foreach (var entity in entities)
         {
-            var properties = entity.GetType()
-                .GetProperties()
-                .Where(x =>
-                    x.GetCustomAttributes(false)
-                        .FirstOrDefault(y => typeof(DynamoDbInner).IsAssignableFrom(y.GetType())) != null);
+            var properties = entity.GetPropertiesWithAttribute<DynamoDbInner>();
             
             foreach (var propertyInfo in properties)
             {
-                var dynamoDbInner = (DynamoDbInner) propertyInfo.GetCustomAttributes(false)
-                    .FirstOrDefault(x => typeof(DynamoDbInner).IsAssignableFrom(x.GetType()));
+                var dynamoDbInner = propertyInfo.GetCustomAttribute<DynamoDbInner>();
                 var type = dynamoDbInner.Type;
                 var list = others[(entity.Id, type.Name)].Select(x => JsonConvert.DeserializeObject(x, type));
                 
@@ -63,5 +60,70 @@ public static class DocumentExtensions
         stopWatch.Stop();
         Console.WriteLine($"Stops in: {stopWatch.ElapsedMilliseconds}ms");
         return entities;
+    }
+    
+    public static List<Entity> SegregateEntities(this Entity entity)
+    {
+        var stopWatch = new Stopwatch();
+        stopWatch.Start();
+        
+        var entities = new List<Entity>{entity};
+        if (string.IsNullOrEmpty(entity.InheritedType))
+            entity.InheritedType = entity.GetType().Name;
+
+        var properties = entity.GetPropertiesWithAttribute<DynamoDbInner>();
+        
+        foreach (var propertyInfo in properties)
+        {
+            var list = propertyInfo.GetValue(entity, null) as IList;
+            
+            foreach (var inner in list)
+            {
+                var innerEntity = (Entity) inner;
+                innerEntity.Id = entity.Id;
+                innerEntity.InheritedType = entity.GetType().Name;
+                var innerSegregateEntities = innerEntity.SegregateEntities();
+
+                entities.GetType().GetMethod("AddRange").Invoke(entities, new[] { innerSegregateEntities });
+            }
+        }
+
+        stopWatch.Stop();
+        Console.WriteLine($"Stops in: {stopWatch.ElapsedMilliseconds}ms");
+        return entities;
+    }
+
+    public static IEnumerable<PropertyInfo> GetPropertiesWithAttribute<T>(this object @object)
+        where T : Attribute 
+        => @object.GetType()
+            .GetProperties()
+            .Where(x => x.CustomAttributes.Any(x => x.AttributeType == typeof(T)))
+            .ToList();
+
+    public static IEnumerable<PropertyInfo> GetPropertiesWithoutAttribute<T>(this object @object)
+        where T : Attribute 
+        => @object.GetType()
+            .GetProperties()
+            .Where(x => x.CustomAttributes.All(x => x.AttributeType != typeof(T)))
+            .ToList();
+
+    public static T GetPropertyWithAttribute<T>(this object @object)
+        where T : Attribute
+        => ((T?) @object.GetType().GetCustomAttributes(true).FirstOrDefault(x => typeof(T).IsAssignableFrom(x.GetType())));
+
+    public static T? GetCustomAttribute<T>(this PropertyInfo property)
+        where T : Attribute 
+        => (T?) property.GetCustomAttributes(false)
+            .FirstOrDefault(y => typeof(T).IsAssignableFrom(y.GetType()));
+
+    public static string GetCollumnName(this PropertyInfo property)
+    {
+        var collumnName = property.GetCustomAttribute<DynamoDBPropertyAttribute>();
+        var collumnJsonName = property.GetCustomAttribute<JsonPropertyAttribute>();
+
+        var collumn = collumnName?.AttributeName ?? 
+                      collumnJsonName?.PropertyName ?? 
+                      property.Name;
+        return collumn;
     }
 }
