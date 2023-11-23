@@ -72,10 +72,3 @@ public class Repository<T> : IRepository<T>
     public virtual async Task Remove(T entity) 
         => await _dynamoDbContext.DeleteAsync(entity);
 }
-
-public class Foo {
-    public void M(int i) { }
-    public void M(string s) { }
-    public void M<T>(T t) { }
-    public void M<T>(T t, string s) { }
-}
