@@ -1,4 +1,5 @@
-﻿using Amazon.DynamoDBv2;
+﻿using System.Globalization;
+using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.Model;
 using DynamoDbMapper.Sdk.Entities;
@@ -20,32 +21,44 @@ public class Repository<T> : IRepository<T>
         _dynamoDbContext = dynamoDbContext;
         _amazonDynamoDb = amazonDynamoDb;
         _multiTenant = multiTenant;
-        _entityType = Activator.CreateInstance<T>().EntityType;
+        _entityType = typeof(T).Name;
     }
-
+    
     public virtual async Task<T> Save(T entity)
     {
-        var entities = entity.SegregateEntities();
+        var oldEntities = (await FindById(entity.Id))?.SegregateEntities() ?? new List<Entity>();
+        var entitiesToSave = entity.SegregateEntities();
         
-        foreach (var entityInner in entities)
+        foreach (var entityToSave in entitiesToSave)
         {
-            if (entityInner is TenantEntity m)
+            entityToSave.UpdatedAt = DateTime.Now.ToString("O");
+            if (entityToSave is TenantEntity m)
                 m.UserId = _multiTenant.UserId;
-
-            var dic = new Dictionary<string, AttributeValue>();
-            var properties = entityInner.GetPropertiesWithoutAttribute<DynamoDBIgnoreAttribute>();
-
-            foreach (var property in properties)
-            {
-                var value = property.GetValue(entityInner);
-                if (value is null)
-                    continue;
-                
-                dic.Add(property.GetCollumnName(), new AttributeValue(value.ToString()));
-            }
             
-            var tableName = entityInner.GetPropertyWithAttribute<DynamoDBTableAttribute>().TableName;
-            await _amazonDynamoDb.PutItemAsync(new PutItemRequest(tableName, dic));
+            var item = oldEntities.FirstOrDefault(x => x.Id == entityToSave.Id);
+            
+            if (!oldEntities.Any() || item is not null)
+            {
+                await _amazonDynamoDb.PutItemAsync(
+                    new PutItemRequest(
+                        entityToSave.GetPropertyWithAttribute<DynamoDBTableAttribute>().TableName, 
+                        entityToSave.AttributeValues()));
+            }
+        }
+
+        foreach (var oldEntity in oldEntities)
+        {
+            var item = entitiesToSave.FirstOrDefault(x => x.Id == oldEntity.Id);
+            if (item is null)
+            {
+                await _amazonDynamoDb.DeleteItemAsync(new DeleteItemRequest(
+                    oldEntity.GetPropertyWithAttribute<DynamoDBTableAttribute>().TableName,
+                    new Dictionary<string, AttributeValue>
+                    {
+                        {nameof(Entity.Id),new AttributeValue(oldEntity.Id)} ,
+                        {nameof(Entity.CreatedAt),new AttributeValue(oldEntity.CreatedAt.ToString(CultureInfo.InvariantCulture))} 
+                    }));
+            }
         }
 
         return entity;
@@ -61,7 +74,6 @@ public class Repository<T> : IRepository<T>
     public virtual async Task<T> FindById(string id) 
         => await CreateQuery()
             .ById(id)
-            .ByInheritedType()
             .FindAsync();
 
     public virtual async Task<Pagination<T>> GetAll() 

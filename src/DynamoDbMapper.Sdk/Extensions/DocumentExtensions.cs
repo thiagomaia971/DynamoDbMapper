@@ -21,13 +21,13 @@ public static class DocumentExtensions
         var others = new Dictionary<(string id, string entityType), List<string>>();
         foreach (var document in documents)
         {
-            var documentEntityType = document["EntityType"].AsString();
+            var documentEntityType = document[nameof(Entity.EntityType)].AsString();
             if (documentEntityType == Activator.CreateInstance<T>().EntityType)
                 entities.Add(dynamoDbContext.FromDocument<T>(document));
             else
             {
                 var json = document.ToJson();
-                var documentId = document["Id"].AsString();
+                var documentId = document[nameof(Entity.ForeingKey)].AsString();
                 if (others.ContainsKey((documentId, documentEntityType)))
                     others[(documentId, documentEntityType)].Add(json);
                 else
@@ -46,7 +46,7 @@ public static class DocumentExtensions
             {
                 var dynamoDbInner = propertyInfo.GetCustomAttribute<DynamoDbInner>();
                 var type = dynamoDbInner.Type;
-                var list = others[(entity.Id, type.Name)].Select(x => JsonConvert.DeserializeObject(x, type));
+                var list = others[($"{entity.Id}:{entity.GetType().Name}", type.Name)].Select(x => JsonConvert.DeserializeObject(x, type));
                 
                 var makeGenericType = typeof(List<>).MakeGenericType(type);
                 var instance = Activator.CreateInstance(makeGenericType);
@@ -70,6 +70,10 @@ public static class DocumentExtensions
         var entities = new List<Entity>{entity};
         if (string.IsNullOrEmpty(entity.InheritedType))
             entity.InheritedType = entity.GetType().Name;
+        if (string.IsNullOrEmpty(entity.PrimaryKey))
+            entity.PrimaryKey = entity.Id;
+        if (string.IsNullOrEmpty(entity.ForeingKey))
+            entity.ForeingKey = $"{entity.Id}:{entity.GetType().Name}";
 
         var properties = entity.GetPropertiesWithAttribute<DynamoDbInner>();
         
@@ -80,7 +84,7 @@ public static class DocumentExtensions
             foreach (var inner in list)
             {
                 var innerEntity = (Entity) inner;
-                innerEntity.Id = entity.Id;
+                innerEntity.ForeingKey = $"{entity.Id}:{entity.GetType().Name}";
                 innerEntity.InheritedType = entity.GetType().Name;
                 var innerSegregateEntities = innerEntity.SegregateEntities();
 

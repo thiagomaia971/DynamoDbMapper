@@ -12,9 +12,14 @@ public abstract class Entity
     [JsonProperty("Id")]
     public string Id { get; set; }
 
-    [DynamoDBRangeKey("Hash")]
-    [JsonProperty("Hash")]
-    public string Hash { get; protected set; }
+    [DynamoDBRangeKey("CreatedAt")]
+    [DynamoDbGsi("GSI-CreatedAt")]
+    [JsonProperty("CreatedAt")]
+    public string CreatedAt { get; set; }
+
+    [DynamoDbGsi("GSI-ForeingKey")]
+    [JsonProperty("ForeingKey")]
+    public string ForeingKey { get; set; }
     
     [DynamoDbGsi("GSI-EntityType")]
     [DynamoDBProperty("EntityType")]
@@ -26,20 +31,25 @@ public abstract class Entity
     [JsonProperty("InheritedType")]
     public string InheritedType { get; set; }
     
-    [DynamoDbGsi("GSI1-Id")]
-    [DynamoDBProperty("GSI1-Id")]
-    [JsonProperty("GSI1-Id")]
-    public string Gsi1Id { get; set; }
+    [DynamoDbGsi("GSI-PrimaryKey")]
+    [DynamoDBProperty("GSI-PrimaryKey")]
+    [JsonProperty("GSI-PrimaryKey")]
+    public string PrimaryKey { get; set; }
     
-    [DynamoDbGsi("GSI1-Hash")]
-    [DynamoDBProperty("GSI1-Hash")]
-    [JsonProperty("GSI1-Hash")]
-    public string Gsi1Hash { get; set; }
+    [DynamoDbGsi("GSI-PrimaryForeingKey")]
+    [DynamoDBProperty("GSI-PrimaryForeingKey")]
+    [JsonProperty("GSI-PrimaryForeingKey")]
+    public string PrimaryForeingKey { get; set; }
+    
+    [DynamoDBProperty("UpdatedAt")]
+    [JsonProperty("UpdatedAt")]
+    public string UpdatedAt { get; set; }
 
     public Entity()
     {
         EntityType = GetType().Name;
         Id = Guid.NewGuid().ToString();
-        Hash = Id;
+        // ForeingKey = Id;
+        CreatedAt = DateTime.Now.ToString("O");
     }
 }

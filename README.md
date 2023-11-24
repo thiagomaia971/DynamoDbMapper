@@ -1,5 +1,14 @@
 # How to Use
 
+## Add in Services
+
+```C#
+services.AddRepositories(typeof(Entity));
+```
+
+```C#
+services.AddDynamodbMapper(configuration, environment);
+```
 ## Create Entity
 
 ```C#
