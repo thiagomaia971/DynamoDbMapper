@@ -7,6 +7,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionFolder", "SolutionF
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamoDbMapper.Example", "DynamoDbMapper.Example\DynamoDbMapper.Example.csproj", "{A026B2CE-F473-4136-91C8-6DF457C9F034}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ci", "ci", "{A5B08F76-FC3C-4BD4-9DFE-91654461564F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,5 +21,12 @@ Global
 		{E5B8A450-53EF-45DA-96D1-9AF01622DD9A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E5B8A450-53EF-45DA-96D1-9AF01622DD9A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E5B8A450-53EF-45DA-96D1-9AF01622DD9A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A026B2CE-F473-4136-91C8-6DF457C9F034}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A026B2CE-F473-4136-91C8-6DF457C9F034}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A026B2CE-F473-4136-91C8-6DF457C9F034}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A026B2CE-F473-4136-91C8-6DF457C9F034}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A5B08F76-FC3C-4BD4-9DFE-91654461564F} = {09909112-BFD7-4644-A5FD-10C0BDD86B82}
 	EndGlobalSection
 EndGlobal

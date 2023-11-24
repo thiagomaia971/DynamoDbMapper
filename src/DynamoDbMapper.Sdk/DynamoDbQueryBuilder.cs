@@ -26,7 +26,7 @@ public class DynamoDbQueryBuilder<T>
         _dynamoDbContext = dynamoDbContext;
         _multiTenantUserId = multiTenantUserId;
         _conditions = new List<DynamoDbCondition>();
-        _entityType = Activator.CreateInstance<T>().EntityType;
+        _entityType = typeof(T).Name;
     }
 
     public static DynamoDbQueryBuilder<T> CreateQuery(
@@ -36,13 +36,14 @@ public class DynamoDbQueryBuilder<T>
 
     public DynamoDbQueryBuilder<T> ById(string value)
     {
-        _conditions.Add(DynamoDbCondition.Create("Id", DynamoDbOperator.Equal, value));
-        return this;
+        if (value.Contains(_entityType))
+            return ByGsi(x => x.ForeingKey, value);
+        return ByGsi(x => x.ForeingKey, $"{value}:{_entityType}");
     }
 
-    public DynamoDbQueryBuilder<T> ByHash(string value, DynamoDbOperator queryOperator = DynamoDbOperator.Equal)
+    public DynamoDbQueryBuilder<T> ByForeingKey(string value, DynamoDbOperator queryOperator = DynamoDbOperator.Equal)
     {
-        _conditions.Add(DynamoDbCondition.Create("Hash", queryOperator, value));
+        _conditions.Add(DynamoDbCondition.Create("ForeingKey", queryOperator, value));
         return this;
     }
 
@@ -101,7 +102,8 @@ public class DynamoDbQueryBuilder<T>
             IndexName = GsiName,
             Limit = _pageSize,
             Filter = _conditions.ToQueryFilter(),
-            AttributesToGet = GetAllProperties(typeof(T))
+            AttributesToGet = GetAllProperties(typeof(T)),
+            BackwardSearch = true
         };
         var table = _dynamoDbContext.GetTargetTable<T>();
         var search = table.Query(queryOperationConfig);
@@ -110,6 +112,7 @@ public class DynamoDbQueryBuilder<T>
         
         return new Pagination<T>
         {
+            LastEvaluatedKey = null,
             Data = entities
         };
     }
