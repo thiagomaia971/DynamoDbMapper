@@ -23,7 +23,7 @@ public class Repository<T> : IRepository<T>
         _multiTenant = multiTenant;
         _entityType = typeof(T).Name;
     }
-
+    
     public virtual async Task<T> Save(T entity)
     {
         var oldEntities = (await FindById(entity.Id))?.SegregateEntities() ?? new List<Entity>();

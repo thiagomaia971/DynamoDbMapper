@@ -16,8 +16,13 @@ public static class EntityExtensions
             var value = property.GetValue(entityInner);
             if (value is null)
                 continue;
-
-            dic.Add(property.GetCollumnName(), new AttributeValue(value.ToString()));
+            
+            if (value is System.DateTime dateTime)
+                dic.Add(property.GetCollumnName(), new AttributeValue(dateTime.ToString("O")));
+            else if (value is System.DateTimeOffset dateTimeOffset)
+                dic.Add(property.GetCollumnName(), new AttributeValue(dateTimeOffset.ToString("O")));
+            else
+                dic.Add(property.GetCollumnName(), new AttributeValue(value.ToString()));
         }
 
         return dic;
